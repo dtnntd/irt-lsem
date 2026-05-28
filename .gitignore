@@ -58,19 +58,11 @@ outputs/b5_report/final_recommendation_examples.csv
 temp/
 tmp/
 
-# ─── Paper LaTeX build artifacts (regeneratable) ─────────────────
-paper/main.pdf
-paper/*.aux
-paper/*.bbl
-paper/*.blg
-paper/*.fdb_latexmk
-paper/*.fls
-paper/*.log
-paper/*.out
-paper/*.synctex.gz
-paper/*.toc
-paper/*.lof
-paper/*.lot
+# ─── Paper LaTeX (kept locally, not published) ───────────────────
+paper/
+
+# ─── HTML reports (regeneratable from .Rmd) ──────────────────────
+*.html
 
 # ─── Misc ────────────────────────────────────────────────────────
 .env
