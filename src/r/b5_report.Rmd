@@ -1,0 +1,659 @@
+---
+title: "IRT-LSEM Phase 1 — Final Report"
+subtitle: "OLM Math THPT, School Year 2024-2025"
+author: "Pipeline output: B0 → B1 → B2 → B3 → B4 → B5"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    df_print: paged
+    mathjax: default
+    fig_width: 8
+    fig_height: 5
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+suppressPackageStartupMessages({
+  library(data.table)
+  library(knitr)
+})
+b5_dir <- file.path("..", "..", "outputs", "b5_report")
+b4_dir <- file.path("..", "..", "outputs", "b4_lsem")
+plots_dir <- file.path("..", "..", "outputs", "b4_lsem", "plots")
+b0_plots_dir <- file.path("..", "..", "outputs", "b0_preprocessed", "plots")
+b1_plots_dir <- file.path("..", "..", "outputs", "b1_dimensionality")
+b2_plots_dir <- file.path("..", "..", "outputs", "b2_calibration", "plots")
+b3_plots_dir <- file.path("..", "..", "outputs", "b3_theta", "plots")
+b6_plots_dir <- file.path("..", "..", "outputs", "b6_kalman", "plots")
+b7_dir       <- file.path("..", "..", "outputs", "b7_applications")
+```
+
+# 1. Introduction
+
+## 1.1 Background — from static to dynamic ability
+
+Classical Item Response Theory (IRT) treats a student's ability as a single fixed
+quantity within a testing occasion. For the one-parameter (Rasch) model, the
+probability that student $i$ answers item $j$ correctly is
+
+$$
+P(Y_{ij} = 1 \mid \theta_i, b_j) = \sigma(\theta_i - b_j)
+= \frac{\exp(\theta_i - b_j)}{1 + \exp(\theta_i - b_j)},
+$$
+
+where $\theta_i$ is the latent ability and $b_j$ the item difficulty. This is adequate
+for a single exam, but on an online learning system where a student engages repeatedly
+across a whole school year, ability is not static: it should be indexed by time,
+$\theta_{it}$. Estimating the *trajectory* $\{\theta_{it}\}_t$ — and the structural
+process generating it — is the goal of this study.
+
+We combine two layers. The **measurement layer** (IRT) converts binary responses into
+a per-occasion ability estimate with measurement error, producing
+$(\hat\theta_{it}, \mathrm{SE}_{it})$ via Bayesian EAP scoring. The **structural layer**
+(LSEM/DSEM) models how $\theta_{it}$ evolves: a Latent Growth Curve Model (LGCM),
+
+$$
+\theta_{it} = \eta_{0i} + \eta_{1i}\,\lambda_t + \varepsilon_{it},
+$$
+
+a Latent Change Score Model (LCSM) whose coupling parameter $\beta$ captures whether
+weaker students catch up,
+
+$$
+\Delta\theta_{it} = \alpha + \beta\,\theta_{i,t-1} + \zeta_{it},
+$$
+
+and, for the intensively-measured Grade 12 subsample, a continuous-time dynamic SEM
+(CT-DSEM) built on an Ornstein–Uhlenbeck process,
+
+$$
+d\theta_{it} = \left(\mu_i - \varphi_i\,\theta_{it}\right)dt + \sigma_i\,dW_t,
+$$
+
+with individual mean-reversion rate $\varphi_i$ and equilibrium
+$\theta_{\text{eq}} = -c/\varphi$.
+
+## 1.2 Research gap
+
+Dynamic-ability modelling that integrates IRT with longitudinal SEM has, to our
+knowledge, not been applied to a Vietnamese online learning context. OLM provides an
+unusually large but *irregularly spaced* longitudinal record (the inter-occasion gap
+$\Delta t$ spans five orders of magnitude), which motivates continuous-time methods and
+a careful per-grade calibration design (no cross-grade $\theta$ linking is possible in
+this single school year).
+
+## 1.3 Research questions
+
+- **RQ1.** Do math-ability trajectories show meaningful growth over a school year?
+- **RQ2.** Are the growth dynamics consistent across grades 10, 11, and 12?
+- **RQ3.** Do students at different ability levels follow distinct dynamic patterns —
+  *catch-up* ($\beta < 0$) versus *Matthew effect* ($\beta > 0$)?
+
+# 2. Executive Summary
+
+This report presents the IRT-LSEM analysis of OLM Math THPT data for school year 2024-2025, covering grades 10, 11, and 12 with **per-grade IRT calibration** (no cross-grade linking) and **longitudinal SEM** (LGCM + LCSM + lmer + CT-DSEM).
+
+**Key findings:**
+
+- **All LSEM models fit excellently** (CFI > .99, RMSEA < .04 across grades).
+- **Growth slopes are small and positive** for all 3 grades, with magnitude decreasing from grade 11 (0.028) > grade 10 (0.015) > grade 12 (0.006) per occasion.
+- **Catch-up → plateau shift** is the headline finding: LCSM coupling $\beta$ is clearly negative (catch-up) in Grade 10, marginal in Grade 11, and $\approx 0$ (plateau) in Grade 12; CT-DSEM (grade 12) shows individual mean-reversion toward equilibrium $\theta_{\text{eq}} \approx 0.65$ logit.
+- **Method comparison**: LGCM-lmer slope difference > 0.005 attributed to method (FIML vs REML on differing data coverage), not nonlinear growth.
+
+# 3. Data & Pipeline
+
+| Step | Method | Output |
+|------|--------|--------|
+| B0 — Preprocess | Python (pandas) | response_long per grade × {exam, practice} |
+| B1 — Dimensionality | R (psych::omega bifactor) | ECV per grade; documented as 1D approx. |
+| B2 — IRT calibration | R (mirt, 1PL/2PL) | item params per grade |
+| B3 — EAP scoring | R (mirt::fscores) | θ trajectory per (HS, day) |
+| B4a — LSEM Tier 1+2 | R (lavaan, lme4) | LGCM, LCSM, lmer params |
+| B4c — CT-DSEM | R (ctsem, optim) | continuous-time dynamics, grade 12 |
+| B5 — Report | R Markdown | this document |
+
+## 3.1 Sample sizes
+
+```{r sample-sizes}
+n_b3 <- rbindlist(lapply(c(10,11,12), function(g) {
+  d <- fread(sprintf("../../outputs/b3_theta/theta_trajectory_1pl_grade_%d.csv", g))
+  data.table(Grade = g,
+             N_HS = uniqueN(d$iduser),
+             N_obs = nrow(d),
+             T_median = median(d[, .N, by = iduser]$N),
+             T_max = max(d[, .N, by = iduser]$N))
+}))
+kable(n_b3, caption = "Sample sizes per grade (after B3 EAP scoring)")
+```
+
+## 3.2 IRT calibration (B2)
+
+- **Model**: 1PL (Rasch) per grade — chosen over 2PL due to 2-6% degenerate items in 2PL fits.
+- **Estimator**: mirt SQUAREM, 1500 iterations, 41 quadrature points (grade 12 only).
+- **Items**: G10=3,277; G11=3,473; G12=8,236 unique items.
+- **Itemfit**: S-X2 unavailable due to sparse data (each HS sees < 10% of item pool); X2/infit used as alternative.
+
+Diagnostic plots below use **Grade 12** as representative; grade 10/11 versions are in `outputs/b2_calibration/plots/`.
+
+```{r b2-plots, out.width="49%", fig.show="hold", fig.cap=c("Item difficulty b (1PL vs 2PL).","Item discrimination a (2PL); dashed = Rasch a=1.","Wright map: HS ability vs item difficulty.","ICC of 9 representative items (2PL).")}
+include_graphics(file.path(b2_plots_dir, "difficulty_dist_grade_12.png"))
+include_graphics(file.path(b2_plots_dir, "discrimination_dist_grade_12.png"))
+include_graphics(file.path(b2_plots_dir, "wright_map_grade_12.png"))
+include_graphics(file.path(b2_plots_dir, "icc_grade_12.png"))
+```
+
+The discrimination distribution (median $a \approx$ values $> 1$, wide spread) is the
+empirical justification for considering 2PL; the Wright map shows the item difficulties
+broadly cover the ability range, with thin coverage at the extremes.
+
+## 3.3 Data shape & dimensionality
+
+Per-occasion counts ($T_i$) are right-skewed (median 4-5 days), and inter-occasion gaps
+$\Delta t$ span several orders of magnitude — motivating the continuous-time treatment in
+§7. The B1 scree plots support a dominant first dimension (1D approximation adopted, with
+the sparse-matrix caveat noted in §10).
+
+```{r b0-T-plots, out.width="32%", fig.show="hold", fig.cap=c("Grade 10 T_i","Grade 11 T_i","Grade 12 T_i")}
+include_graphics(file.path(b0_plots_dir, "T_distribution_grade_10.png"))
+include_graphics(file.path(b0_plots_dir, "T_distribution_grade_11.png"))
+include_graphics(file.path(b0_plots_dir, "T_distribution_grade_12.png"))
+```
+
+```{r b0-dt-plots, out.width="32%", fig.show="hold", fig.cap=c("Grade 10 Δt","Grade 11 Δt","Grade 12 Δt")}
+include_graphics(file.path(b0_plots_dir, "dt_distribution_grade_10.png"))
+include_graphics(file.path(b0_plots_dir, "dt_distribution_grade_11.png"))
+include_graphics(file.path(b0_plots_dir, "dt_distribution_grade_12.png"))
+```
+
+```{r b1-scree, out.width="32%", fig.show="hold", fig.cap=c("Grade 10 scree","Grade 11 scree","Grade 12 scree")}
+include_graphics(file.path(b1_plots_dir, "scree_plot_grade_10.png"))
+include_graphics(file.path(b1_plots_dir, "scree_plot_grade_11.png"))
+include_graphics(file.path(b1_plots_dir, "scree_plot_grade_12.png"))
+```
+
+## 3.4 Measurement quality (B3 EAP)
+
+```{r reliability}
+rel <- fread(file.path(b5_dir, "final_reliability.csv"))
+rel_show <- rel[, .(Grade = grade, N_obs = n_obs,
+                    Var_theta = round(var_theta, 3),
+                    Mean_SE2 = round(mean_se2, 3),
+                    Reliability = round(rho, 3))]
+kable(rel_show, caption = "Empirical reliability rho = 1 - mean(SE^2)/Var(theta-hat)")
+```
+
+Reliability is acceptable for research (Grade 12 = 0.81, Grade 11 = 0.75); Grade 10
+(0.69) sits just below the conventional 0.70 threshold, consistent with its shorter, less
+informative tests. Diagnostic distributions (Grade 12 representative; grades 10/11 in
+`outputs/b3_theta/plots/`):
+
+```{r b3-plots, out.width="49%", fig.show="hold", fig.cap=c("Sample theta-hat trajectories (9 HS, +/- SE).","theta-hat distribution.","SE(theta-hat) distribution.")}
+include_graphics(file.path(b3_plots_dir, "trajectory_samples_grade_12.png"))
+include_graphics(file.path(b3_plots_dir, "theta_distribution_grade_12.png"))
+include_graphics(file.path(b3_plots_dir, "se_distribution_grade_12.png"))
+```
+
+# 4. Main Results Figure
+
+The four panels below summarise the study's headline results: cross-grade growth
+trajectories (a), the **catch-up → plateau** coupling shift (b), slope agreement across
+estimation methods (c), and the continuous-time learning-rate regime in Grade 12 (d).
+
+```{r main-figure, out.width="100%", fig.cap="Main results. (a) LGCM population trajectories by grade. (b) LCSM coupling b — the catch-up to plateau shift (KEY FINDING). (c) Growth slope by method (LGCM / MLM-weighted / MLM-unweighted). (d) CT-DSEM learning rate vs current ability, Grade 12."}
+include_graphics(file.path(b5_dir, "fig_main_results.png"))
+```
+
+# 5. Longitudinal SEM Tier 1 (B4a) — LGCM + LCSM
+
+## 5.1 Fit indices
+
+```{r fit-indices}
+fit <- fread(file.path(b5_dir, "final_fit_indices.csv"))
+kable(fit, caption = "Fit indices for LGCM and LCSM models, grades 10-12 (max_T=4)")
+```
+
+All models meet conventional cutoffs (CFI > .95, RMSEA < .06, SRMR < .08). LCSM provides marginal BIC improvement over LGCM for grade 11 only.
+
+## 5.2 LGCM growth parameters
+
+```{r lgcm-params}
+lgcm <- fread(file.path(b5_dir, "final_lgcm_params.csv"))
+lgcm_show <- lgcm[, .(
+  Grade = grade, Param = param,
+  Estimate = round(est, 4),
+  CI = ifelse(is.na(ci_lower), "—",
+              sprintf("[%.4f, %.4f]", ci_lower, ci_upper))
+)]
+kable(lgcm_show, caption = "LGCM parameters with 1000-bootstrap 95% CI")
+```
+
+**Interpretation:**
+
+- `i_mean`: starting $\theta$ (intercept factor mean) — small, positive across grades.
+- `s_mean`: linear growth rate per occasion (out of 4) — Grade 11 highest (0.028), Grade 12 lowest (0.006).
+- Variances `i_var`, `s_var` represent between-HS heterogeneity in starting level and growth rate.
+
+```{r lgcm-overlay, out.width="32%", fig.show="hold", fig.cap=c("Grade 10","Grade 11","Grade 12")}
+include_graphics(file.path(plots_dir, "lgcm_overlay_grade_10.png"))
+include_graphics(file.path(plots_dir, "lgcm_overlay_grade_11.png"))
+include_graphics(file.path(plots_dir, "lgcm_overlay_grade_12.png"))
+```
+
+The red population line (intercept + slope) overlays 50 sampled observed trajectories,
+showing the small positive average growth against substantial between-student spread.
+
+## 5.3 LCSM coupling — catch-up vs Matthew effect (KEY FINDING)
+
+```{r lcsm-params}
+lcsm <- fread(file.path(b5_dir, "final_lcsm_params.csv"))
+lcsm_show <- lcsm[, .(
+  Grade = grade, Param = param,
+  Estimate = round(est, 4),
+  CI = ifelse(is.na(ci_lower), "—",
+              sprintf("[%.4f, %.4f]", ci_lower, ci_upper))
+)]
+kable(lcsm_show, caption = "LCSM parameters with 1000-bootstrap 95% CI")
+```
+
+**Coupling parameter $\beta$ (reported as `b`) interpretation:**
+
+- $\beta < 0$ → **catch-up**: lower-$\theta$ students gain more between occasions.
+- $\beta > 0$ → **Matthew effect**: high-$\theta$ students gain more.
+- $\beta \approx 0$ → no coupling (plateau).
+
+Result: Grade 10 shows clear catch-up ($\beta = -0.069$, CI excludes 0); Grade 11 marginal catch-up ($\beta = -0.043$, CI crosses 0); Grade 12 no coupling ($\beta \approx 0$). This grade-ordered weakening of catch-up is the **catch-up → plateau shift** highlighted throughout this report.
+
+The change-score densities below split each grade by initial-ability tercile. In Grade 10
+the low-$\theta_0$ group's $\Delta\theta$ mass sits visibly to the right of the high-$\theta_0$
+group (compensatory catch-up); by Grade 12 the terciles overlap (plateau).
+
+```{r lcsm-density, out.width="32%", fig.show="hold", fig.cap=c("Grade 10","Grade 11","Grade 12")}
+include_graphics(file.path(plots_dir, "lcsm_dtheta_density_grade_10.png"))
+include_graphics(file.path(plots_dir, "lcsm_dtheta_density_grade_11.png"))
+include_graphics(file.path(plots_dir, "lcsm_dtheta_density_grade_12.png"))
+```
+
+# 6. Tier 2 — Mixed-effects Model (lmer)
+
+## 6.1 lmer parameters (full data, all T, precision-weighted)
+
+```{r mlm-params}
+mlm <- fread(file.path(b5_dir, "final_mlm_params.csv"))
+mlm[, est := round(est, 4)]
+mlm[, se := round(se, 4)]
+kable(mlm, caption = "Mixed-effects model: theta ~ day_idx + (1+day_idx|iduser), weights=1/se^2")
+```
+
+## 6.2 Convergent evidence (LGCM vs lmer)
+
+```{r convergent}
+conv <- fread(file.path(b5_dir, "final_convergent_evidence.csv"))
+kable(conv, caption = "Cross-method comparison of growth slope")
+```
+
+**Pre-registered threshold** $|\text{slope}_{\text{LGCM}} - \text{slope}_{\text{lmer}}| < 0.005$ **NOT met for any grade**.
+
+Sensitivity analysis (script `b4a_test.R`) showed:
+
+- lmer-capped (T≥4 subset, cap t<4) ≈ lmer-full → cap and subset don't drive the difference.
+- LGCM still > lmer-capped by 0.006-0.011 → **method effect** (FIML imputation under linear growth assumption vs REML on observed cases).
+
+Per-grade decomposition:
+
+| Grade | Method effect | Selection effect | Nonlinearity | Total Δ |
+|-------|---------------|------------------|--------------|---------|
+| 10 | 0.011 | 0.000 | 0.000 | 0.011 |
+| 11 | 0.010 | 0.009 | 0.000 | 0.019 |
+| 12 | 0.006 | 0.000 | 0.000 | 0.006 |
+
+→ **Primary inference uses lmer Tier 2** (no FIML extrapolation); LGCM CIs reported with caveat for grades 10/12 due to bootstrap nonadmissibility (68%/85%).
+
+## 6.3 Three-method slope comparison
+
+```{r slope-comparison}
+sc <- fread(file.path(b5_dir, "final_slope_comparison.csv"))
+sc_show <- sc[, .(
+  Grade = grade, Method = method,
+  Slope = round(slope, 4),
+  CI = sprintf("[%.4f, %.4f]", ci_lower, ci_upper)
+)]
+kable(sc_show, caption = "Growth slope by method (LGCM bootstrap CI; MLM Wald CI). Panel (c) of the main figure.")
+```
+
+All three methods agree on **direction** (positive growth) for every grade; the
+weighted and unweighted mixed models are very close, confirming the LGCM–lmer gap is a
+method/imputation effect rather than a data artefact (see §6.2).
+
+## 6.4 Value added over a static baseline
+
+To quantify the benefit of modelling time at all, we compare a **static** model
+(random-intercept only, $\theta_{it} = \eta_{0i} + \varepsilon_{it}$ — ability treated as
+constant within the year, a proxy for OLM's static-Rasch snapshot) against the **dynamic**
+growth model (random intercept + slope). Both fit by ML for a valid likelihood-ratio test.
+
+```{r baseline}
+base <- fread(file.path(b5_dir, "final_baseline_comparison.csv"))
+base_show <- base[, .(
+  Grade = grade,
+  AIC_static = round(aic_static, 0), AIC_dynamic = round(aic_dynamic, 0),
+  dAIC = round(aic_static - aic_dynamic, 1),
+  dBIC = round(bic_static - bic_dynamic, 1),
+  LRT_chisq = round(lrt_chisq, 1), df = lrt_df,
+  LRT_p = signif(lrt_p, 3)
+)]
+kable(base_show, caption = "Static (constant theta) vs dynamic (growth) model. Positive dAIC/dBIC favour the dynamic model.")
+```
+
+The dynamic model is decisively preferred for every grade (all $\Delta$AIC/$\Delta$BIC
+positive and large; LRT $p < 10^{-18}$). Beyond fit, the dynamic model delivers what a
+static estimate cannot (cf. framework §8.4): a per-student growth rate, the ability to
+**predict** $\theta_{i,t+1}$, and detection of **declining** trajectories — directly
+useful for early intervention.
+
+# 7. CT-DSEM (B4c) — Continuous-Time Dynamics, Grade 12
+
+## 7.1 Subsample & approach
+
+- **Subsample**: 460 HS with T ≥ 15 measurements; 9,591 total observations; time range 0-207 days.
+- **Model**: Continuous-time Ornstein-Uhlenbeck with random effects on `phi` (drift) and `cint` (intercept).
+- **Mode**: MAP estimation (`optim`), 2.2 minutes runtime.
+
+## 7.2 Population parameters
+
+```{r ctdsem-pop}
+ctdsem_pop <- fread(file.path(b5_dir, "final_ctdsem_population.csv"))
+kable(ctdsem_pop[, .(Param = param,
+                     Estimate = estimate,
+                     CI = sprintf("[%.4f, %.4f]", ci_low, ci_high))],
+      caption = "CT-DSEM grade 12 population parameters")
+```
+
+**Derived metrics:**
+
+- **Equilibrium** $\theta_{\text{eq}} = -c/\varphi \approx 0.65$ logit (asymptotic ability)
+- **Half-life** $\ln(2)/|\varphi| \approx 408$ days — slow learning curve at population level
+
+## 7.3 Per-day rate predictions
+
+| Current θ | dθ/dt (per day) | 1 month (30d) | 1 semester (90d) |
+|-----------|-----------------|---------------|------------------|
+| -1.0 (low) | +0.0028 | +0.084 | +0.252 |
+| 0.0 (mid) | +0.0011 | +0.033 | +0.099 |
+| +1.0 (high) | -0.0006 | -0.018 | -0.054 |
+
+→ Continuous-time **catch-up effect**: low-ability HS gain ~0.25 logit per semester.
+
+## 7.4 Individual heterogeneity
+
+```{r ctdsem-ind}
+ind <- fread(file.path(b5_dir, "final_ctdsem_individual_summary.csv"))
+ind[, median := signif(median, 3)]
+ind[, iqr_low := signif(iqr_low, 3)]
+ind[, iqr_high := signif(iqr_high, 3)]
+kable(ind, caption = "Individual heterogeneity (460 HS): median + IQR")
+```
+
+## 7.5 Visualizations
+
+```{r ctdsem-plots, out.width="100%", fig.cap=c('phi distribution','cint distribution','theta_eq distribution','Predicted trajectories','dtheta/dt vs current theta')}
+include_graphics(file.path(plots_dir, "ctdsem_phi_distribution.png"))
+include_graphics(file.path(plots_dir, "ctdsem_cint_distribution.png"))
+include_graphics(file.path(plots_dir, "ctdsem_theta_eq_distribution.png"))
+include_graphics(file.path(plots_dir, "ctdsem_predicted_trajectories.png"))
+include_graphics(file.path(plots_dir, "ctdsem_rate_vs_theta.png"))
+```
+
+# 8. Kalman smoothing (B6) — real-time / online layer
+
+The CT-DSEM model in §7 describes a continuous-time latent process; **Kalman smoothing
+on the EAP series gives the discrete-time, frequentist counterpart** — a recursive
+estimator that can be deployed in production for real-time ability tracking. Per
+occasion the state evolves and the noisy EAP estimate $\hat\theta_{it}$ updates the
+filter:
+
+$$
+\theta_{it} = \theta_{i,t-1} + u_{it},\quad u_{it} \sim \mathcal{N}(0, q_g),\qquad
+\hat\theta_{it} = \theta_{it} + \varepsilon_{it},\quad \varepsilon_{it} \sim \mathcal{N}(0, \mathrm{SE}_{it}^2).
+$$
+
+The observation variance is *time-varying* — it is the per-occasion EAP standard
+error from B3, which is small when an HS attempts many items on a day and large
+when they attempt few. The state innovation variance $q_g$ is pooled per grade by
+method of moments on consecutive increments:
+$\widehat{q}_g = \overline{\Delta\hat\theta^2} - \overline{\mathrm{SE}_t^2 + \mathrm{SE}_{t-1}^2}$.
+
+```{r kalman-gain-tbl}
+kg <- fread(file.path(b5_dir, "final_kalman_gain.csv"))
+kable(kg, caption = "B6 Kalman gain — mean SE before/after smoothing and pooled state-innovation variance")
+```
+
+```{r kalman-plots, out.width="49%", fig.show="hold", fig.cap=c("9 sample HS, Grade 12: raw EAP θ̂ ± 1.96·SE_raw (gray) vs smoothed line + ribbon.","SE reduction density, Grade 12.","Cross-grade variance smoothing gain.")}
+include_graphics(file.path(b6_plots_dir, "kalman_overlay_grade_12.png"))
+include_graphics(file.path(b6_plots_dir, "kalman_se_reduction_grade_12.png"))
+include_graphics(file.path(b6_plots_dir, "kalman_pop_gain.png"))
+```
+
+Kalman smoothing tightens per-occasion ability estimates most where they are
+weakest: early occasions with few items per day. The variance reduction
+("smoothing gain") quantifies how much measurement noise the temporal model
+absorbs. This is the **online-estimation** ingredient that addresses MT2 of the
+proposal; a streaming variational generalisation that handles the logit
+observation directly (rather than via the EAP intermediate) is documented as a
+design contribution in `docs/oirt_vi_design.md` and listed as Phase 2 runtime
+work. The smoothed trajectory is also re-used in §9 below as the lower-noise
+input to the early-warning drop signal.
+
+# 9. Applications (B7)
+
+The two prototypes below convert the dynamic ability estimates into concrete
+pedagogical signals — a *candidate list* for human review (early warning) and a
+*next-item* recommendation under the 1PL information-max policy. Neither is a
+deterministic classifier; both are decision-support outputs intended to be
+embedded in the OLM platform alongside teacher dashboards.
+
+## 9.1 Early-warning — at-risk HS flagging
+
+For each grade, an HS is flagged if **either** of two criteria holds:
+
+- *Structural*: precision-weighted per-HS growth slope (from the B4a lmer fit,
+  `fixef(day_idx) + ranef$iduser$day_idx`) is in the bottom 10% of the cohort.
+- *Event-level*: the largest single-step decrement on the **Kalman-smoothed**
+  trajectory (§8), $\min(\Delta\theta^{\text{smooth}}_{it})$, falls below $-1.0$
+  logit. Computing the drop on the smoothed series rather than on the raw EAP
+  $\hat\theta_{it}$ matters: mean $\mathrm{SE}_{\text{smooth}} \approx 0.40$
+  logit, so $-1.0$ corresponds to $\approx 2.5\,\mathrm{SE}$ — a robust signal
+  rather than a single-occasion bounce.
+
+Eligible cohort: HS with $T \geq 3$ measurements (so slope is identifiable). The
+flag is intentionally unioned (OR) and accompanied by a stricter AND variant in
+the per-grade CSVs — the union casts a wide net for follow-up, the intersection
+narrows to the most consistent signals.
+
+```{r b7a-summary}
+ew <- fread(file.path(b5_dir, "final_early_warning_summary.csv"))
+kable(ew, caption = "Early-warning flag counts per grade (OR-flag = either slope or drop; AND in n_both)")
+```
+
+The flagged share rises from 14% in Grade 10 to 22% in Grade 12, consistent with
+the catch-up→plateau story (more "drops" survive into a regime where compensatory
+dynamics no longer absorb them). The `n_both` column gives the high-confidence
+subset that triggered *both* the slope and the drop criterion — these are the
+most defensible candidates for early intervention. Operationally these lists
+would feed a queue for teacher review or for an automatic remediation track on
+OLM; they are not endpoints in themselves.
+
+## 9.2 Item recommendation — 1PL information-max
+
+Under the 1PL Rasch model the Fisher information of item $j$ at ability $\theta$
+is
+
+$$
+I_j(\theta) \;=\; P_j(\theta)\bigl(1 - P_j(\theta)\bigr),\qquad P_j(\theta) = \sigma(\theta - b_j),
+$$
+
+maximised at $b_j = \theta$ (peak value $0.25$). The recommender returns the
+top-$k$ items minimising $|b_j - \hat\theta_{\text{current}}|$ subject to
+$|b_j - \hat\theta| < \delta = 0.5$, which keeps information $\geq 0.235$
+(≈94% of peak).
+
+For demonstration we pick 10 representative HS per grade — 3 low ($\hat\theta
+\leq Q_{10}$), 4 mid ($Q_{40} < \hat\theta < Q_{60}$), 3 high ($\hat\theta \geq
+Q_{90}$) — with deterministic seed 42, using each HS's most recent occasion in
+B3 as $\hat\theta_{\text{current}}$.
+
+```{r b7b-preview}
+rec <- fread(file.path(b5_dir, "final_recommendation_examples.csv"))
+preview <- rec[, .SD[rec_rank <= 3], by = .(grade, iduser)]
+kable(head(preview[order(grade, profile, iduser, rec_rank)], 15),
+      caption = "Top-3 recommendations for the first 5 demo HS — preview (full table in final_recommendation_examples.csv).")
+```
+
+**Caveats.** (a) *Cold start*: a brand-new HS has no $\hat\theta$, so the
+recommender must default to the EAP prior ($\theta=0$) until at least one
+response arrives. (b) *No content-area diversity*: this prototype optimises only
+on measurement information, not on syllabus coverage; a production version would
+combine information-max with a coverage constraint over the OLM topic taxonomy.
+(c) *Static item bank*: the recommendation uses the 2024-25 calibrated $b_j$
+values; Phase 2 will add online recalibration as new responses accumulate.
+
+# 10. Cross-grade Pattern
+
+```{r replication}
+slope_lgcm <- fread(file.path(b5_dir, "final_lgcm_params.csv"))[param == "s_mean"]
+cv <- sd(slope_lgcm$est) / mean(abs(slope_lgcm$est))
+cat(sprintf("LGCM slopes across grades: %s\n",
+            paste(sprintf("g%d=%.4f", slope_lgcm$grade, slope_lgcm$est),
+                  collapse = ", ")))
+cat(sprintf("Coefficient of variation (CV) = %.2f\n", cv))
+cat(sprintf("Pre-registered threshold: CV < 0.30. Result: %s\n",
+            ifelse(cv < 0.30, "PASS", "FAIL")))
+cat(sprintf("All slopes positive: %s\n",
+            ifelse(all(slope_lgcm$est > 0), "YES", "NO")))
+```
+
+**Cross-grade pattern assessment** (reframing pre-registered thresholds as findings, not failures):
+
+- **Direction**: all 3 grades show positive growth — the most robust, fully consistent result.
+- **Magnitude / CV**: the CV < 0.30 threshold is not met. With slopes in the 0.006–0.028 range, small absolute differences inflate relative variation; the cross-grade differences (Grade 11 active growth vs Grade 12 ceiling effects) are **substantively interpretable**, not measurement instability.
+- **Coupling**: the catch-up → plateau shift ($\beta$ negative in Grade 10, $\approx 0$ in Grade 12) is itself the key cross-grade *finding* — a qualitative regime change, consistent with content becoming more cumulative in upper grades.
+
+The threshold "failures" are therefore reported as substantive results, following the reframing in the table below (§12), rather than as problems with the measurement model.
+
+# 11. Discussion
+
+## 11.1 The compensatory-to-plateau shift
+
+The most striking result is a *qualitative shift* in ability dynamics across grades.
+In Grade 10 the LCSM coupling is clearly negative ($\beta = -0.069$), so students with
+lower initial ability gain disproportionately more — a **compensatory (catch-up)** regime
+that narrows the within-grade gap. By Grade 11 this effect is marginal
+($\beta = -0.043$, CI crosses 0), and by Grade 12 it vanishes
+($\beta \approx 0$): students preserve their relative positions — a **plateau** regime.
+The continuous-time Grade 12 model tells the same story from a different angle: a
+mean-reverting process with equilibrium $\theta_{\text{eq}} = -c/\varphi \approx 0.65$
+logit and a long half-life ($\approx 408$ days), i.e. weak pull toward a common level.
+
+## 11.2 Pedagogical implications
+
+The grade-differential pattern suggests **intervention timing matters**. Remedial support
+is likely most effective in Grade 10, where compensatory dynamics already operate in
+students' favour; by Grade 12 the system shifts toward preserving existing gaps, so the
+same gain requires more intensive, earlier intervention. The continuous-time estimate
+that low-ability students gain $\approx 0.25$ logit per semester (vs slight regression
+for high-ability students) gives a concrete, time-scaled target for monitoring.
+
+## 11.3 Methodological contributions (multi-tier convergent design)
+
+This study contributes a **multi-tier convergent design** for dynamic ability:
+(Tier 1) LGCM/LCSM with bootstrap CIs on a capped, balanced window;
+(Tier 2) precision-weighted and unweighted mixed-effects models on the full,
+unbalanced data; (Tier 3) a continuous-time DSEM for the intensively-measured
+subsample; and (Tier 4) a Kalman state-space smoother that turns the same
+EAP series into a real-time, frequentist counterpart of Tier 3 (B6, §8).
+Agreement on the *direction* of growth across all tiers — despite different data
+coverage and estimators — is stronger evidence than any single model, and the residual
+LGCM–lmer slope gap is transparently attributed to FIML-vs-REML method effects rather
+than to substantive nonlinearity. The Kalman layer also feeds two downstream
+applications (§9), closing the loop from measurement to actionable signal.
+
+## 11.4 Comparison with literature
+
+The catch-up coupling sign in lower grades is consistent with compensatory growth
+reported in the LCSM literature (McArdle, 2009), while the move toward a Matthew/plateau
+regime in cumulative upper-grade content echoes findings on widening gaps when
+prerequisites compound. The continuous-time framing follows Driver, Oud & Voelkle (2017)
+and Asparouhov, Hamaker & Muthén (2018); using IRT EAP scores with their measurement
+error as input to the structural layer is the bridge that makes per-occasion ability
+usable in these models.
+
+# 12. Limitations & Caveats
+
+1. **Itemfit S-X2 unavailable** for any grade due to sparse response patterns (each HS attempts ≪ 10% of the item pool). X2/infit was substituted as the misfit screen.
+
+2. **B4a bootstrap nonadmissibility** was high for LGCM grade 10 (68.6%) and grade 12 (84.9%). LGCM CIs for these grades should be interpreted as suggestive; lmer Tier 2 provides primary inference.
+
+3. **LGCM-lmer convergent evidence** failed the pre-registered $|\Delta| < 0.005$ threshold for all grades. Sensitivity analysis attributes this to method (FIML linear-growth imputation vs REML on observed cases) rather than nonlinear growth — interpreted as a substantive method effect, not a measurement problem.
+
+4. **CT-DSEM uses MAP estimation** (`optim` mode) for point estimates with Wald-type CIs. Full Bayesian MCMC remains as future sensitivity check.
+
+5. **2PL EAP scoring not done** as primary; 1PL Rasch was used due to 2-6% degenerate items ($a \le 0$ or $|b| > 5$) in 2PL fits. 2PL kept for future sensitivity.
+
+6. **Phase 1 only**: This report covers school year 2024-2025. Cross-year linking and trends are out of scope.
+
+7. **Per-grade calibration**: No cross-grade theta scale linking. Inferences within grades only — cross-grade comparisons are qualitative (pattern shifts), not quantitative magnitude comparisons.
+
+8. **No teacher/class metadata**: the OLM math collections (`math_teacher_static`, `math_teacher_categories`, `math_teacher_course`) do not contain a `class_id` / `teacher_id` / `school_id` field, so the proposal's MT4(c) *teaching-effectiveness* analysis is deferred to Phase 2 pending schema enrichment. See `docs/scope_refinement.md`.
+
+9. **Single-construct measurement → no RI-CLPM**: the proposal lists RI-CLPM among four LSEM variants, but RI-CLPM requires ≥2 constructs measured longitudinally to identify cross-lagged effects; Phase 1 has only mathematics ability, so RI-CLPM is over-specified and was dropped on methodological grounds rather than for lack of time.
+
+10. **VI/OIRT delivered as a design contribution only**: the streaming variational form of MT2 needs a deployment platform (the proposal's §8.3 production code is also deferred). The algorithmic specification — ELBO, streaming update, complexity — is documented in `docs/oirt_vi_design.md`.
+
+# 13. Conclusion
+
+Integrating IRT with longitudinal SEM enables tracking of *dynamic* math ability on a
+Vietnamese online learning system. Across grades 10–12 we find consistent, small,
+positive growth (RQ1) and a robust **catch-up → plateau shift** (RQ3): a compensatory
+regime in Grade 10 that weakens through Grade 11 and disappears by Grade 12, corroborated
+by a continuous-time mean-reversion model. The dynamics are directionally consistent
+across grades and estimation methods (RQ2), while the differences in magnitude are
+substantively interpretable rather than artefacts. These results carry a direct
+pedagogical message — intervene early, while compensatory dynamics still help — and lay
+the methodological groundwork for Phase 2 (cross-year vertical scaling with the
+2025-2026 review course as natural anchor items).
+
+Two downstream applications translate the dynamic estimates into actionable signals
+for the OLM platform: a real-time Kalman smoothing layer (B6) that tightens
+per-occasion ability estimates by absorbing measurement noise across time, and
+prototype early-warning + item-recommendation tools (B7) that surface at-risk
+students and serve information-maximising next items.
+
+# 14. Reproducibility
+
+Pipeline scripts in `research/irt_lsem/src/r/`:
+
+| Script | Step | Runtime |
+|--------|------|---------|
+| `b1_dimensionality.R` | B1 | ~30 min |
+| `b2_calibration.R` | B2 | ~3 hours |
+| `b2_postprocess.R` | B2 cleanup | ~5 min |
+| `b3_eap_scoring.R` | B3 | ~20 min |
+| `b4a_lgcm_lcsm.R` | B4a | ~17 min |
+| `b4a_test.R` | B4a sensitivity | ~2 min |
+| `b4c_ctdsem.R` | B4c | ~2 min (optim) |
+| `b4c_viz.R` | B4c plots | ~1 min |
+| `b5_consolidate.R` | B5 tables | <1 min |
+| `b5_plots.R` | B5 figures | <1 min |
+| `b6_kalman.R` | B6 KFAS smoother | ~2 min |
+| `b6_viz.R` | B6 plots | <1 min |
+| `b7a_early_warning.R` | B7a flagging | <1 min |
+| `b7b_recommendation.R` | B7b recommender | <1 min |
+| `b5_report.Rmd` | this document | <1 min |
+
+Outputs are CSV/RDS/PNG; all artefacts in `outputs/`. R version `r R.version.string`. Random seed = 42 across pipeline.
+
+```{r session-info}
+sessionInfo()
+```

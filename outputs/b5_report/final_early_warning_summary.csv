@@ -1,0 +1,4 @@
+grade,n_total,n_flagged,pct_flagged,n_slope_only,n_drop_only,n_both
+10,6285,905,14.4,411,276,218
+11,6740,1357,20.13,293,683,381
+12,10440,2325,22.27,557,1281,487

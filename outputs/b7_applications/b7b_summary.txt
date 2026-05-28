@@ -1,0 +1,8 @@
+B7b Item recommendation (1PL info-max) — Summary
+Date: 2026-05-28 12:48:50 
+Policy: top-5 items minimizing |b - θ̂|, capped at δ=0.50.
+Per grade demo: 3 low (θ≤Q10) + 4 mid (Q40<θ<Q60) + 3 high (θ≥Q90).
+
+Total rec rows: 150 across 30 unique HS
+abs_diff: median=0.002, 90th pct=0.013, max=0.035
+info_at_theta: median=0.2500 (max possible = 0.25)

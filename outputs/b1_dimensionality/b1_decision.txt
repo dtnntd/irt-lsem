@@ -1,0 +1,9 @@
+B1 Decisions
+Date: 2026-05-25 18:41:31.404218
+Method: Top 200 items + bifactor IRT → ECV
+
+Grade 10: Multidim — can MIRT 2D
+Grade 11: Multidim — can MIRT 2D
+Grade 12: Mixed — giu RI-CLPM
+
+Rules: ECV>=0.80 → 1D | 0.65-0.80 → Mixed (keep RI-CLPM) | <0.65 → Multidim

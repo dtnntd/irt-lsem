@@ -1,0 +1,59 @@
+% ============================================================================
+% hnue.sty — HNUE Journal of Science compliance package
+%
+% Reusable macros + section heading specs aligned with HNUE format:
+%   - paper 19x27 cm, margins 3/2.5/2/1 cm (handled in main.tex geometry)
+%   - Times New Roman 12pt body, single line spacing (main.tex)
+%   - section headings 14pt/13pt/12pt bold lowercase
+%   - table caption above (bold italic, centered); figure caption below
+%
+% This file deliberately contains NO documentclass / geometry / babel.
+% Those belong to main.tex so the package is loadable for other HNUE papers.
+% ============================================================================
+\ProvidesPackage{style/hnue}[2026/05/28 HNUE Journal of Science format helpers]
+
+\RequirePackage{titlesec}
+\RequirePackage{caption}
+\RequirePackage{etoolbox}
+
+% --- Heading levels per HNUE spec --------------------------------------------
+\titleformat{\section}
+  {\fontsize{14}{16}\bfseries}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+\titleformat{\subsection}
+  {\fontsize{13}{15}\bfseries}{\thesubsection.}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{6pt}{6pt}
+
+\titleformat{\subsubsection}
+  {\fontsize{12}{14}\bfseries}{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\subsubsection}{0pt}{2pt}{2pt}
+
+% Level-3 (paragraph) — marked with * per HNUE
+\titleformat{\paragraph}[runin]
+  {\fontsize{12}{14}\itshape\bfseries}{*}{0.5em}{}
+\titlespacing*{\paragraph}{0.75cm}{2pt}{0.5em}
+
+% --- Caption style ------------------------------------------------------------
+\captionsetup[table]{position=top,    font={bf,it}, justification=centering, labelsep=colon, name=Bảng}
+\captionsetup[figure]{position=bottom, font={bf,it}, justification=centering, labelsep=colon, name=Hình}
+
+% --- Shortcuts ----------------------------------------------------------------
+\newcommand{\thetahat}{\hat{\theta}}
+\newcommand{\thetait}{\theta_{it}}
+\newcommand{\seit}{\mathrm{SE}_{it}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Norm}{\mathcal{N}}
+\newcommand{\IRT}{IRT}
+\newcommand{\LSEM}{LSEM}
+\newcommand{\CTDSEM}{CT-DSEM}
+\newcommand{\OLM}{OLM}
+\newcommand{\KFAS}{KFAS}
+\newcommand{\Rasch}{Rasch}
+\newcommand{\EAP}{EAP}
+
+% --- Compact list spacing (paper economy on 10-page limit) --------------------
+\RequirePackage{enumitem}
+\setlist{nosep, leftmargin=1.2em}
+
+\endinput

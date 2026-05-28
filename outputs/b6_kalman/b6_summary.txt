@@ -1,0 +1,17 @@
+B6 Kalman Smoother — Summary
+Date: 2026-05-28 12:45:39 
+
+Model: local-level state-space, time-varying H_t = se_t² from B3
+Pool: q̂_g per grade via method of moments on consecutive Δθ̂.
+
+=== Population metrics ===
+   grade  n_hs n_obs q_state_variance mean_se_raw mean_se_smooth mean_var_raw
+   <int> <int> <int>            <num>       <num>          <num>        <num>
+1:    10  6407 32191        0.4441701   0.4991234      0.3869912    0.2610946
+2:    11  7002 29959        0.7339629   0.5274466      0.4332310    0.2953712
+3:    12 10804 60807        0.6195856   0.4423373      0.3687005    0.2059463
+   mean_var_smooth mean_smoothing_gain n_skip_T1 n_fail elapsed_min
+             <num>               <num>     <int>  <int>       <num>
+1:       0.1535335           0.4119621         0      0   0.5646605
+2:       0.1941326           0.3427505        38      0   0.6160907
+3:       0.1399855           0.3202815       199      0   0.9486711

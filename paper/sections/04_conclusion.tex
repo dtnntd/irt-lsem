@@ -1,0 +1,17 @@
+% ============================================================================
+% §3 Kết luận — văn phong hedged, consistent với §2.4 limitations (RTM,
+% effect size khiêm tốn, smoother hồi cứu).
+% ============================================================================
+
+\section{Kết luận}
+\label{sec:conclusion}
+
+Bài báo đề xuất và kiểm chứng một khung tích hợp IRT--LSEM kèm bộ lọc Kalman trên bộ dữ liệu OLM Math THPT quy mô lớn (24{.}213 học sinh, 122{.}957 lượt đánh giá thuộc năm học 2024--2025). Ba phát hiện chính:
+
+(1) Mô hình động vượt mô hình tĩnh cơ sở \emph{về mặt thống kê} với \(\Delta\)AIC = 82--167 và \(p\)-value LRT \(\le 10^{-19}\); tuy nhiên độ lớn các tham số tăng trưởng thực (slope 0{,}006--0{,}028 logit mỗi đợt) còn khiêm tốn --- tín hiệu động tồn tại nhưng cần đánh giá ý nghĩa thực tiễn trong từng bối cảnh ứng dụng cụ thể.
+
+(2) Một xu thế giảm dần của hệ số coupling \(\beta\) theo khối được quan sát (khối 10 \(\beta = -0{,}069\) với khoảng tin cậy không chứa 0; khối 12 \(\beta \approx 0\)), nhất quán với điểm cân bằng dài hạn \(\theta_{\mathrm{eq}} = +0{,}65\) và bán chu kỳ 408 ngày của CT-DSEM. Cần thận trọng khi diễn giải kết quả này như cơ chế đuổi kịp thực chất, vì một phần có thể phản ánh hồi quy về trung bình do sai số đo lường hữu hạn (xem giới hạn 2 ở Mục~\ref{sec:discussion}); việc phân tách hai nguồn này là một hướng kiểm chứng quan trọng cho các nghiên cứu mở rộng.
+
+(3) Bộ lọc Kalman làm trơn hồi cứu (smoother) giảm 32--41\% phương sai sai số đo lường EAP trong cùng pipeline mà không cần tăng số câu hỏi khảo sát --- đây là cải thiện kỹ thuật rõ rệt và độc lập với hai phát hiện trên về cấu trúc.
+
+Các hướng nghiên cứu mở rộng được đề xuất gồm: (a) triển khai mã chạy thực tế của Suy diễn Biến phân cho 1PL để hiện thực hoá ước lượng đệ quy thuần trực tuyến (mục tiêu thời gian thực) và so sánh với Kalman trên cùng dữ liệu; (b) căn chỉnh thang đo dọc qua năm học (vertical scaling) bằng cách sử dụng các đề ôn 2025--2026 làm câu hỏi neo (anchor items); (c) tích hợp siêu dữ liệu lớp học và giáo viên để mở rộng phân tích sang bài toán đánh giá hiệu quả giảng dạy dựa trên tốc độ tăng trưởng năng lực; (d) tách biệt cơ chế đuổi kịp thực chất khỏi hồi quy về trung bình do sai số đo bằng mô phỏng hiệu chỉnh hoặc mô hình hoá sai số đo ở tầng tiềm ẩn; (e) mở rộng phân tích sang biến tiềm ẩn thứ hai (mức độ tương tác, thời gian học) để khôi phục tính khả định của mô hình RI-CLPM.

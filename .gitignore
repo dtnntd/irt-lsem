@@ -1,0 +1,79 @@
+# ─── Python ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ─── R ───────────────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rapp.history
+*.Rproj.user/
+renv/library/
+renv/staging/
+
+# ─── Editor / IDE ────────────────────────────────────────────────
+.vscode/
+.idea/
+.serena/
+.kiro/
+
+# ─── OS ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── DATA: raw input (PRIVATE — student PII via iduser) ──────────
+data/
+data_raw/
+*.csv.gz
+
+# ─── MODELS: fitted .rds (PRIVATE — embed individual response data) ──
+*.rds
+
+# ─── OUTPUTS: per-student rows + plots có PII (PRIVATE) ──────────
+outputs/b0_preprocessed/response_long_*.csv
+outputs/b0_preprocessed/day_mapping_*.csv
+
+outputs/b3_theta/theta_trajectory_*.csv
+# trajectory_samples PNGs hiển thị iduser thật ở panel labels
+outputs/b3_theta/plots/trajectory_samples_*.png
+
+outputs/b4_lsem/ctdsem_individual_params.csv
+outputs/b4_lsem/ctdsem_individual_rates.csv
+outputs/b4_lsem/ctdsem_predicted_trajectories.csv
+
+outputs/b6_kalman/kalman_smoothed_grade_*.csv
+
+outputs/b7_applications/early_warning_grade_*.csv
+outputs/b7_applications/recommendation_demo_grade_*.csv
+
+# B5 report aggregate is PUBLIC, except the per-HS recommendation example
+outputs/b5_report/final_recommendation_examples.csv
+
+# Mọi plot khác (aggregate / anonymized "HS 1...9") đều public
+
+# ─── Build artifacts (logs, temp, large) ─────────────────────────
+*.log
+temp/
+tmp/
+
+# ─── Paper LaTeX build artifacts (regeneratable) ─────────────────
+paper/main.pdf
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+paper/*.lof
+paper/*.lot
+
+# ─── Misc ────────────────────────────────────────────────────────
+.env
+.env.local
+*.bak
+*.orig

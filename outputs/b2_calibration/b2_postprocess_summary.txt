@@ -1,0 +1,8 @@
+B2 Post-processing Summary
+Date: 2026-05-26 19:12:12.414599
+Thresholds: a in [ 0.1 , 4 ], |b| <= 5
+
+Grade   Total      Bad        Bad%       low_a      high_a     extreme_b 
+10      958        22         2.3%       11         6          5         
+11      749        47         6.28%      37         0          10        
+12      2199       98         4.46%      62         0          36        

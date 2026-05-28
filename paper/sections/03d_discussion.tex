@@ -1,0 +1,27 @@
+% ============================================================================
+% §2.4 Thảo luận — văn phong tiếng Việt học thuật.
+% ============================================================================
+
+\subsection{Thảo luận}
+\label{sec:discussion}
+
+\textbf{Diễn dịch chính.} Phối hợp giữa hệ số coupling LCSM (Hình~\ref{fig:lgcmlcsm}) và mô hình CT-DSEM của khối~12 (Bảng~\ref{tab:ctdsem}) gợi ý một quỹ đạo phát triển năng lực gồm hai pha: pha đuổi kịp ở khối~10 --- nơi học sinh có năng lực thấp được kéo về phía mặt bằng chung của lớp; và pha ổn định ở khối~12 --- nơi cohort đã hội tụ về một điểm cân bằng tương đối cao (\(\theta_{\mathrm{eq}} \approx +0{,}65\)) với dynamics rất chậm (bán chu kỳ vượt một năm học). Hệ quả thực tiễn: không thể kỳ vọng các can thiệp ngắn hạn dịch chuyển nhiều giá trị \(\theta\); muốn tạo thay đổi đáng kể về năng lực cần đến cường độ và thời gian dài --- đây là gợi ý quan trọng cho phụ huynh và giáo viên trong việc lập kế hoạch học tập.
+
+\textbf{Đối chiếu giữa các phương pháp.} Hệ số tăng trưởng ước lượng bằng LGCM (FIML) và bằng lmer (REML) đồng dấu (dương) ở cả ba khối, tuy nhiên \(|s_{\mathrm{LGCM}} - s_{\mathrm{lmer}}| > 0{,}005\) ở mọi khối (Bảng~\ref{tab:convergent}). Đây là hiệu ứng do lựa chọn phương pháp ước lượng: LGCM bù dữ liệu thiếu theo giả định tăng trưởng tuyến tính, trong khi lmer chỉ sử dụng các quan sát thực có. Kết luận định tính của nghiên cứu --- mô hình động vượt trội mô hình tĩnh và cơ chế đuổi kịp chuyển dần sang ổn định theo khối --- là bền vững; tuy nhiên độ lớn tuyệt đối của các tham số cần được hiểu trong giới hạn của thuật toán ước lượng.
+
+\begin{table}[H]
+\centering\small
+\caption{Bằng chứng hội tụ giữa LGCM (FIML) và lmer (REML).}
+\label{tab:convergent}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Khối} & \textbf{$s_{\mathrm{LGCM}}$} & \textbf{$s_{\mathrm{lmer}}$} & \textbf{$|$chênh lệch$|$} \\
+\midrule
+10 & 0{,}0146 & 0{,}0032 & 0{,}0114 \\
+11 & 0{,}0281 & 0{,}0089 & 0{,}0192 \\
+12 & 0{,}0058 & 0{,}0005 & 0{,}0053 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Giới hạn nghiên cứu.} (1) \emph{Cấu hình mẫu và hiệu lực ngoại biên.} Trung vị \(T_{\mathrm{median}} = 4\text{--}5\) đợt là ngắn so với chuẩn vàng LSEM bậc hai (\(T \ge 6\)) và RI-CLPM đa biến tiềm ẩn; mẫu là người dùng OLM tự chọn nền tảng học trực tuyến, không đại diện ngẫu nhiên cho cohort THPT chung; hiệu lực cấu trúc của \(\hat\theta\) so với các thang đo truyền thống (điểm trường, thi quốc gia) chưa được đối chiếu. (2) \emph{Hồi quy về trung bình do sai số đo.} \(\beta\) của LCSM được ước lượng từ \(\hat\theta\) EAP vốn có sai số và bị co ngót về tiên nghiệm; do đó một phần \(\beta < 0\) ở khối 10 có thể phản ánh regression-to-the-mean do độ tin cậy hữu hạn (\(\rho = 0{,}687\)) thay vì cơ chế đuổi kịp thực chất --- pattern \(\rho\) thấp đi kèm \(|\beta|\) lớn (khối 10) và \(\rho\) cao đi kèm \(\beta \approx 0\) (khối 12) phù hợp với cả hai cách diễn giải. Việc tách biệt đòi hỏi mô phỏng hiệu chỉnh hoặc mô hình hoá sai số đo ở tầng tiềm ẩn. (3) \emph{Tính so sánh thang đo theo thời gian.} \(\hat\theta\) ở các đợt được chấm với cùng tiên nghiệm \(N(0,1)\), chưa thực hiện căn chỉnh thang đo dọc (\emph{vertical scaling}) hay kiểm định trôi tham số (DIF) theo thời gian; việc neo trung bình quần thể mỗi đợt có thể co hẹp ước lượng tăng trưởng tổng. (4) \emph{Smoother hồi cứu vs estimator trực tuyến.} Kalman trong bài là bộ làm trơn (\emph{smoother}) dùng quan sát tương lai chứ không phải bộ lọc đệ quy thuần trực tuyến; mục tiêu ước lượng thời gian thực sau mỗi đáp ứng mới (gắn với phát biểu bài toán) chưa được hiện thực hoá. Mở rộng cho quan sát phi tuyến (1PL/2PL) qua Suy diễn Biến phân đã có thiết kế nhưng chưa runtime. (5) \emph{Cỡ mẫu lớn và các giả định đo lường mạnh.} Với \(N\) rất lớn, \(\Delta\)AIC và \(p\)-value LRT phản ánh chủ yếu cỡ mẫu; slope thực 0{,}006--0{,}028 logit/đợt cho thấy ``bác bỏ giả định tĩnh'' chủ yếu về mặt thống kê, độ lớn tín hiệu động khiêm tốn. Ba giả định cần kiểm chứng: bất biến đo lường giữa bài luyện tập (effort thấp) và kiểm tra (effort cao); 1PL bỏ qua tham số đoán mò \(c_j\); và đơn chiều cho môn Toán đa chủ đề (Đại số, Hình học, Giải tích). (6) \emph{Ứng dụng chưa kiểm chứng kết quả.} B7a chưa đối chiếu precision/recall trên kết quả học tập sau đó; tỷ lệ 100\% câu khuyến nghị trong \(\delta = 0{,}5\) ở B7b chủ yếu phản ánh mật độ ngân hàng câu hỏi chứ không phải chất lượng thuật toán. Đồng thời, mô hình trạng thái Kalman dạng random-walk mâu thuẫn với cơ chế mean-reverting mà CT-DSEM phát hiện ở khối 12, và smoother có thể làm mờ các bước giảm đột ngột mà cảnh báo sớm cần bắt --- nghịch lý over-smoothing cần cân nhắc khi triển khai. Bài toán đánh giá hiệu quả giảng dạy và bộ dữ liệu thứ hai (đánh giá định kỳ STEM ở trường phổ thông) đều đòi hỏi mở rộng dữ liệu (thông tin lớp/giáo viên hoặc hợp tác trường), nằm ngoài phạm vi bài báo này.

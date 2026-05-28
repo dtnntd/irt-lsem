@@ -1,0 +1,25 @@
+[project]
+name = "irt-lsem-research"
+version = "0.1.0"
+description = "IRT-LSEM analysis for OLM Math THPT data (2024-2025)"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "pytz>=2024.1",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "tqdm>=4.66",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "ipython>=8.20",
+    "ruff>=0.3.0",
+    "pytest>=8.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

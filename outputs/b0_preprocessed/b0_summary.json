@@ -1,0 +1,74 @@
+[
+  {
+    "grade": 10,
+    "type_group": "exam",
+    "n_students": 6471,
+    "n_responses": 800536,
+    "n_items_unique": 4254,
+    "n_days_total": 32579,
+    "median_T": 4,
+    "p90_T": 9,
+    "p95_T": 11,
+    "max_T": 18
+  },
+  {
+    "grade": 10,
+    "type_group": "practice",
+    "n_students": 224,
+    "n_responses": 13229,
+    "n_items_unique": 135,
+    "n_days_total": 834,
+    "median_T": 4,
+    "p90_T": 4,
+    "p95_T": 4,
+    "max_T": 4
+  },
+  {
+    "grade": 11,
+    "type_group": "exam",
+    "n_students": 7120,
+    "n_responses": 799884,
+    "n_items_unique": 4750,
+    "n_days_total": 30811,
+    "median_T": 4,
+    "p90_T": 7,
+    "p95_T": 9,
+    "max_T": 17
+  },
+  {
+    "grade": 11,
+    "type_group": "practice",
+    "n_students": 133,
+    "n_responses": 15699,
+    "n_items_unique": 336,
+    "n_days_total": 428,
+    "median_T": 3,
+    "p90_T": 4,
+    "p95_T": 4,
+    "max_T": 4
+  },
+  {
+    "grade": 12,
+    "type_group": "exam",
+    "n_students": 10973,
+    "n_responses": 2147897,
+    "n_items_unique": 10269,
+    "n_days_total": 62101,
+    "median_T": 4,
+    "p90_T": 10,
+    "p95_T": 13,
+    "max_T": 38
+  },
+  {
+    "grade": 12,
+    "type_group": "practice",
+    "n_students": 193,
+    "n_responses": 85428,
+    "n_items_unique": 1241,
+    "n_days_total": 1422,
+    "median_T": 5,
+    "p90_T": 13,
+    "p95_T": 14,
+    "max_T": 16
+  }
+]

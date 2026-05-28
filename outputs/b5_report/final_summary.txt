@@ -1,0 +1,99 @@
+=== IRT-LSEM Phase 1 — FINAL SUMMARY ===
+Date: 2026-05-28 12:49:14 
+Data: OLM Math THPT, school year 2024-2025, grades 10-12
+
+--- Sample sizes ---
+     Grade_10 Grade_11 Grade_12
+nHS      6407     7002    10804
+nObs    32191    29959    60807
+
+--- LGCM/LCSM Fit Indices ---
+    Model Grade ChiSq    df        p   CFI   TLI RMSEA       RMSEA_CI  SRMR
+   <char> <int> <num> <int>    <num> <num> <num> <num>         <char> <num>
+1:   LGCM    10 17.08     5 4.36e-03 0.996 0.996 0.019 [0.010, 0.030] 0.011
+2:   LCSM    10  7.11     2 2.85e-02 0.998 0.995 0.020 [0.006, 0.037] 0.008
+3:   LGCM    11 38.45     5 3.07e-07 0.991 0.989 0.031 [0.022, 0.040] 0.017
+4:   LCSM    11  6.81     2 3.32e-02 0.999 0.996 0.019 [0.004, 0.035] 0.007
+5:   LGCM    12 32.50     5 4.72e-06 0.997 0.996 0.023 [0.016, 0.030] 0.011
+6:   LCSM    12 15.20     2 5.01e-04 0.998 0.995 0.025 [0.014, 0.037] 0.010
+      BIC
+    <num>
+1:  57703
+2:  57720
+3:  69015
+4:  69010
+5: 105984
+6: 105995
+
+--- Convergent Evidence (LGCM vs lmer slope) ---
+   Grade LGCM_slope           LGCM_CI MLM_slope            MLM_CI abs_diff
+   <int>      <num>            <char>     <num>            <char>    <num>
+1:    10     0.0146  [0.0043, 0.0233]    0.0032 [-0.0013, 0.0077]   0.0114
+2:    11     0.0281  [0.0169, 0.0389]    0.0089  [0.0026, 0.0152]   0.0192
+3:    12     0.0058 [-0.0020, 0.0132]    0.0005 [-0.0022, 0.0032]   0.0053
+   Convergent_at_0.005
+                <lgcl>
+1:               FALSE
+2:               FALSE
+3:               FALSE
+
+--- LGCM slope (95% bootstrap CI) ---
+   grade    est                CI
+   <int>  <num>            <char>
+1:    10 0.0146  [0.0043, 0.0233]
+2:    11 0.0281  [0.0169, 0.0389]
+3:    12 0.0058 [-0.0020, 0.0132]
+
+--- LCSM coupling (b) ---
+   grade       b                 CI
+   <int>   <num>             <char>
+1:    10 -0.0695 [-0.1186, -0.0218]
+2:    11 -0.0427  [-0.0912, 0.0097]
+3:    12  0.0018  [-0.0255, 0.0295]
+
+--- CT-DSEM (Grade 12, T>=15, N=460) ---
+          param estimate  ci_low ci_high theta_eq_pop half_life_pop
+         <char>    <num>   <num>   <num>        <num>         <num>
+1:      mean_T0  -0.0490 -0.1250  0.0260    0.6470588      407.7336
+2:       var_T0   0.7600  0.7070  0.8160    0.6470588      407.7336
+3:          phi  -0.0017 -0.0027 -0.0010    0.6470588      407.7336
+4:         cint   0.0011  0.0006  0.0016    0.6470588      407.7336
+5:        sigma   0.0460  0.0410  0.0530    0.6470588      407.7336
+6: manifest_var   0.5720  0.5620  0.5820    0.6470588      407.7336
+
+--- Reliability of theta-hat (rho > 0.70 desired) ---
+   grade n_obs   rho
+   <num> <int> <num>
+1:    10 32191 0.687
+2:    11 29959 0.746
+3:    12 60807 0.814
+
+--- Static vs Dynamic baseline (positive dAIC/dBIC favour dynamic) ---
+   grade  dAIC  dBIC    LRT_p
+   <num> <num> <num>    <num>
+1:    10  81.8  56.7 6.45e-19
+2:    11  91.7  66.8 4.87e-21
+3:    12 166.9 139.9 2.99e-37
+
+--- Kalman gain (B6) — variance reduction of theta-hat ---
+   grade mean_se_raw mean_se_smooth pct_reduction q_state_variance
+   <int>       <num>          <num>         <num>            <num>
+1:    10       0.499          0.387         0.412          0.44417
+2:    11       0.527          0.433         0.343          0.73396
+3:    12       0.442          0.369         0.320          0.61959
+
+--- Applications: early-warning flag counts (B7a) ---
+   grade n_total n_flagged pct_flagged n_slope_only n_drop_only n_both
+   <num>   <int>     <int>       <num>        <int>       <int>  <int>
+1:    10    6285       905       14.40          411         276    218
+2:    11    6740      1357       20.13          293         683    381
+3:    12   10440      2325       22.27          557        1281    487
+
+--- Applications: recommendation demo (B7b) — 150 rec rows across 30 HS, 3 grades ---
+
+--- Open caveats ---
+1. Itemfit S-X2 unavailable due to sparse data; X2/infit used as alternative.
+2. B4a bootstrap nonadmissibility 68-85% for LGCM grade 10/12. Primary inference uses lmer Tier 2.
+3. |slope_LGCM - slope_lmer| > 0.005 for all grades. Interpreted as method effect (FIML imputation vs REML), not nonlinear growth (per b4a_test sensitivity analysis).
+4. CT-DSEM uses MAP (optim) mode. Full Bayesian MCMC available as future sensitivity check.
+5. 2PL EAP scoring not done; 1PL Rasch used per stability decision (B2 had 2-6%% degenerate 2PL items).

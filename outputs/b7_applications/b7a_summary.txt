@@ -1,0 +1,14 @@
+B7a Early-warning — Summary
+Date: 2026-05-28 12:48:39 
+Criteria: slope < quantile(slope, 0.10) OR min(Δθ) < -1.00, T >= 3
+
+   grade n_total n_flagged pct_flagged n_slope_only n_drop_only n_both
+   <int>   <int>     <int>       <num>        <int>       <int>  <int>
+1:    10    6285       905       14.40          411         276    218
+2:    11    6740      1357       20.13          293         683    381
+3:    12   10440      2325       22.27          557        1281    487
+   slope_cutoff drop_threshold
+          <num>          <num>
+1:  -0.01761605             -1
+2:  -0.02299741             -1
+3:  -0.01676778             -1

@@ -1,0 +1,17 @@
+Grade 10 — 1PL vs 2PL comparison (on items_200):
+
+                 AIC    SABIC       HQ      BIC    logLik       X2  df p
+m1pl_on_200 500278.2 503663.5 502511.1 506711.0 -249180.1               
+m2pl        495296.7 502060.4 499758.0 508148.9 -245732.4 6895.466 957 0
+
+AIC 1PL: 500278.17
+AIC 2PL: 495296.7
+BIC 1PL: 506710.96
+BIC 2PL: 508148.87
+ΔBIC (1PL - 2PL): -1437.91
+LRT p-value: 0
+Mean a_j (2PL): 1.093
+Var(a_j) (2PL): 0.349
+Range a_j: -0.549 — 5.13
+
+*** Recommended: 1PL ***
