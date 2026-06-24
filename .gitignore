@@ -69,3 +69,6 @@ paper/
 .env.local
 *.bak
 *.orig
+
+# Xuất bản HTML báo cáo qua GitHub Pages (docs/)
+!docs/*.html
