@@ -42,59 +42,37 @@ Nhật ký bao gồm hai loại đánh giá: (i) \emph{bài luyện tập} do h�
 \end{minipage}
 \end{figure}
 
-\subsubsection{Quy trình phân tích từ B0 đến B7}
+\subsubsection{Quy trình phân tích}
 
-Quy trình phân tích được tổ chức thành tám bước nối tiếp (Hình~\ref{fig:pipeline}), tương ứng một-một với cấu trúc thư mục \texttt{src/} trong kho mã nguồn nhằm hỗ trợ tái lập: \textbf{B0} tiền xử lý nhật ký OLM (ngôn ngữ Python); \textbf{B1} kiểm tra giả định đơn chiều bằng phân tích nhân tố khám phá (EFA) kèm biểu đồ giá trị riêng (\emph{scree plot}) trên R; \textbf{B2} hiệu chuẩn IRT 1PL bằng gói \texttt{mirt}; \textbf{B3} chấm điểm EAP, sinh ra cặp \((\hat\theta_{it}, \seit)\); \textbf{B4} tầng cấu trúc LSEM gồm LGCM/LCSM (\texttt{lavaan}), mô hình đa cấp tầng 2 (\texttt{lme4}) và CT-DSEM cho khối 12 (\texttt{ctsem}); \textbf{B5} hợp nhất kết quả và sinh báo cáo bằng \texttt{rmarkdown}; \textbf{B6} làm trơn Kalman bằng gói \texttt{KFAS}; \textbf{B7} các ứng dụng dẫn xuất (B7a cảnh báo sớm, B7b gợi ý câu hỏi).
+Quy trình phân tích gồm bảy bước nối tiếp (Hình~\ref{fig:pipeline}). Nhật ký làm bài trước hết được làm sạch và chuyển sang dạng dài, mỗi dòng là một đáp ứng của một học sinh với một câu hỏi trong một đợt (bước 1). Tính đơn chiều của ngân hàng câu hỏi được kiểm tra bằng phân tích nhân tố khám phá và biểu đồ giá trị riêng (bước 2) trước khi hiệu chuẩn độ khó \(b_j\) bằng mô hình 1PL, riêng cho từng khối (bước 3). Với các \(b_j\) đã cố định, năng lực của học sinh ở từng đợt được chấm bằng EAP, cho cặp \((\hat\theta_{it}, \seit)\) (bước 4). Chuỗi ước lượng này đi vào hai nhánh song song: các mô hình cấu trúc dọc phân tích quỹ đạo ở cấp khối (bước 5), còn bộ làm trơn Kalman hiệu chỉnh quỹ đạo của từng học sinh (bước 6). Kết quả của hai nhánh, cùng ngân hàng câu hỏi đã hiệu chuẩn, được dùng cho hai ứng dụng cảnh báo sớm và gợi ý câu hỏi (bước 7). Bước 1 được viết bằng Python; các bước còn lại dùng R với các gói \texttt{mirt}, \texttt{lavaan}, \texttt{lme4}, \texttt{ctsem} và \texttt{KFAS}.
 
 \begin{figure}[H]
 \centering
-\resizebox{\linewidth}{!}{%
+\resizebox{0.9\linewidth}{!}{%
 \begin{tikzpicture}[
   font=\footnotesize,
   every node/.style = {align=center},
-  meas/.style  = {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt, fill=blue!8},
-  struct/.style= {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt, fill=orange!15},
-  smooth/.style= {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt, fill=green!15},
-  app/.style   = {rectangle, draw, rounded corners=2pt, minimum width=30mm, minimum height=11mm, inner sep=2pt, fill=red!12},
-  cons/.style  = {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt, fill=purple!15},
-  data/.style  = {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt, fill=gray!12},
+  box/.style   = {rectangle, draw, rounded corners=2pt, minimum width=24mm, minimum height=9mm, inner sep=2pt},
   arr/.style   = {-{Latex[length=1.6mm]}, thick},
   dasharr/.style = {-{Latex[length=1.6mm]}, thick, dashed, gray!70},
 ]
-% Row 1: measurement chain (linear)
-\node[data]   (b0) at (0,     0) {\textbf{B0} Tiền xử lý\\ \scriptsize nhật ký $\to$ response\_long};
-\node[meas]   (b1) at (3.2,   0) {\textbf{B1} Một chiều\\ \scriptsize EFA + scree};
-\node[meas]   (b2) at (6.4,   0) {\textbf{B2} IRT 1PL\\ \scriptsize ước lượng $b_j$};
-\node[meas]   (b3) at (9.6,   0) {\textbf{B3} EAP\\ \scriptsize $\hat\theta_{it},\ \seit$};
-
-% Row 2: two parallel branches (LSEM | Kalman)
-\node[struct] (b4) at (6.4, -1.7) {\textbf{B4} LSEM\\ \scriptsize LGCM/LCSM/CT-DSEM};
-\node[smooth] (b6) at (9.6, -1.7) {\textbf{B6} Kalman\\ \scriptsize làm trơn $\hat\theta_{it}$};
-
-% Row 3: applications + consolidation
-\node[app]    (b7) at (8.0, -3.3) {\textbf{B7} Ứng dụng\\ \scriptsize B7a Cảnh báo sớm\\ \scriptsize B7b Gợi ý câu hỏi};
-\node[cons]   (b5) at (12.6,-3.3) {\textbf{B5} Báo cáo\\ \scriptsize hợp nhất + sinh báo cáo};
-
-% Row 1 arrows
-\draw[arr] (b0) -- (b1);
-\draw[arr] (b1) -- (b2);
-\draw[arr] (b2) -- (b3);
-
-% Row 1 -> Row 2
-\draw[arr] (b3) -- (b4);
-\draw[arr] (b3) -- (b6);
-
-% Row 2 -> Row 3
-\draw[arr] (b4) -- (b7);
-\draw[arr] (b6) -- (b7);
-
-% Row 3 -> B5
-\draw[arr] (b7) -- (b5);
-
-% Item bank shortcut B2 -> B7 (dashed = secondary)
-\draw[dasharr] (b2.south) to[bend right=18] (b7.north);
+\node[box, fill=gray!12]   (s1) at (0,    0) {(1) Tiền xử lý\\ \scriptsize nhật ký $\to$ dạng dài};
+\node[box, fill=blue!8]    (s2) at (3.5,  0) {(2) Kiểm tra đơn chiều\\ \scriptsize EFA, giá trị riêng};
+\node[box, fill=blue!8]    (s3) at (7.0,  0) {(3) Hiệu chuẩn 1PL\\ \scriptsize độ khó $b_j$};
+\node[box, fill=blue!8]    (s4) at (10.5, 0) {(4) Chấm điểm EAP\\ \scriptsize $\hat\theta_{it},\ \seit$};
+\node[box, fill=orange!15] (s5) at (7.2, -1.8) {(5) Mô hình cấu trúc dọc\\ \scriptsize LGCM, LCSM, đa cấp, CT-DSEM};
+\node[box, fill=green!15]  (s6) at (11.6,-1.8) {(6) Làm trơn Kalman\\ \scriptsize quỹ đạo từng học sinh};
+\node[box, fill=red!12]    (s7) at (9.4, -3.4) {(7) Ứng dụng\\ \scriptsize cảnh báo sớm, gợi ý câu hỏi};
+\draw[arr] (s1) -- (s2);
+\draw[arr] (s2) -- (s3);
+\draw[arr] (s3) -- (s4);
+\draw[arr] (s4) -- (s5);
+\draw[arr] (s4) -- (s6);
+\draw[arr] (s5) -- (s7);
+\draw[arr] (s6) -- (s7);
+\draw[dasharr] (s3.south) to[bend right=30] (s7.west);
 \end{tikzpicture}}
-\caption{Quy trình phân tích B0--B7 (mũi tên đứt nét: B7b dùng ngân hàng câu hỏi từ B2).}
+\caption{Quy trình phân tích bảy bước (mũi tên đứt nét: gợi ý câu hỏi dùng ngân hàng câu hỏi đã hiệu chuẩn ở bước 3).}
 \label{fig:pipeline}
 \end{figure}
 
