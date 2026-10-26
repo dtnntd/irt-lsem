@@ -3,11 +3,11 @@
 # ========================================================================
 .PHONY: pdf clean watch count_pages count_words verify
 
-LATEXMK = latexmk -pdf -interaction=nonstopmode -file-line-error -halt-on-error
+LATEXMK = latexmk -xelatex -interaction=nonstopmode -file-line-error -halt-on-error
 
 pdf: main.pdf
 
-main.pdf: main.tex sections/*.tex refs/references.bib style/hnue.sty
+main.pdf: main.tex sections/*.tex refs/references.bib style/hnue.sty style/hnue.bst
 	$(LATEXMK) main.tex
 
 watch:
@@ -27,6 +27,6 @@ verify: main.pdf
 	@echo "=== HNUE compliance smoke-test ==="
 	@pdfinfo main.pdf | grep -E '^(Pages|Page size)'
 	@echo "--- Sections present ---"
-	@pdftotext main.pdf - | grep -cE '^(1\. Giới thiệu|2\. Nội dung nghiên cứu|3\. Kết luận|Tóm tắt|Abstract)' || true
+	@pdftotext main.pdf - | grep -cE '^(1\. Mở đầu|2\. Nội dung nghiên cứu|3\. Kết luận|Tóm tắt|ABSTRACT)' || true
 	@echo "--- Repo link in acknowledgements ---"
 	@pdftotext main.pdf - | grep -o 'github.com[^[:space:]]*' || echo 'WARNING: no GitHub URL found'

@@ -1,30 +1,31 @@
-
-
 % ============================================================================
-% IRT-LSEM Manuscript — HNUE Journal of Science
+% IRT-LSEM Manuscript — HNUE Journal of Science (mẫu bài tiếng Việt)
 %
-% Build:   make pdf       (uses latexmk)
-% Pages:   <= 10 (HNUE limit) — verify with `make count_pages`
+% Build:   make pdf       (latexmk -xelatex)
+% Spec:    "Mau bao cao Tieng Viet.docx" của Tạp chí — xem style/hnue.sty
 % ============================================================================
-\documentclass[12pt]{article}
+\documentclass[11pt,twoside]{article}
 
-\usepackage[utf8]{inputenc}
-\usepackage[T5]{fontenc}                 % Vietnamese encoding (T5 = TCVN)
-\usepackage[english,vietnamese]{babel}   % vietnamese LAST → active default
-\usepackage{lmodern}                     % Latin Modern (close to Times New Roman in metrics);
-                                         % swap to `mathptmx` if system has Times available.
+% --- Font: Times New Roman (XeLaTeX + fontspec), toán kiểu Times ------------
+\usepackage{mathptmx}
+\usepackage[no-math]{fontspec}
+\setmainfont{Times New Roman}
+\usepackage{polyglossia}
+\setdefaultlanguage{vietnamese}
+\setotherlanguage{english}
 
-% --- Page geometry: 19x27 cm + margins per HNUE -----------------------------
+% --- Page geometry: 19x27 cm, lề đối xứng chẵn/lẻ ----------------------------
+% Top 2,5 / Bottom 2 / Inside 3 / Outside 1 cm; header/footer cách mép 1,5 cm.
 \usepackage{geometry}
-\geometry{paperwidth=19cm, paperheight=27cm,
-          top=2.5cm, bottom=2cm, left=3cm, right=1cm,
-          headheight=1.5cm, footskip=1.5cm}
+\geometry{paperwidth=19cm, paperheight=27cm, twoside,
+          top=2.5cm, bottom=2cm, inner=3cm, outer=1cm,
+          headheight=0.5cm, headsep=0.5cm, footskip=0.5cm}
 
-% --- Body text spec ----------------------------------------------------------
+% --- Body text spec: single, first line 0,75 cm, before/after 2 pt ----------
 \usepackage{setspace}\singlespacing
 \usepackage{indentfirst}
 \setlength{\parindent}{0.75cm}
-\setlength{\parskip}{2pt}                % paragraph spacing before/after 2pt
+\setlength{\parskip}{2pt}
 \renewcommand{\arraystretch}{1.0}
 \setlength{\tabcolsep}{4pt}
 \setlength{\textfloatsep}{6pt}
@@ -32,7 +33,7 @@
 \setlength{\floatsep}{6pt}
 
 % --- Math + tables + figures + links ----------------------------------------
-\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsmath,amssymb}
 \usepackage{booktabs,array}
 \usepackage{float}                       % [H] force inline figures
 \usepackage{graphicx}
@@ -43,8 +44,9 @@
 \usepackage{cite}                        % numeric [1], [2]-[5] auto-collapse
 \usepackage[breaklinks=true,hidelinks]{hyperref}
 \usepackage{xurl}
+\urlstyle{same}
 
-% --- Page numbering: L-even / R-odd -----------------------------------------
+% --- Page numbering: Different odd and even, Different first page ----------
 \usepackage{fancyhdr}
 \pagestyle{fancy}\fancyhf{}
 \fancyfoot[LE,RO]{\thepage}
@@ -60,17 +62,14 @@
 \thispagestyle{empty}
 
 \input{sections/00_metadata}
-\input{sections/01_abstract}
 
 \input{sections/02_introduction}
 \input{sections/03_content}
 \input{sections/04_conclusion}
 \input{sections/05_acknowledgements}
 
-{\fontsize{10}{12}\selectfont
-\begin{multicols}{2}
-\bibliographystyle{ieeetr}
-\bibliography{refs/references}
-\end{multicols}}
+\input{sections/06_references}
+
+\input{sections/07_abstract_en}
 
 \end{document}

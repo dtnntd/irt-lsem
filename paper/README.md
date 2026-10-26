@@ -1,37 +1,39 @@
 # HNUE Journal manuscript — IRT–LSEM Phase 1
 
-LaTeX source for the Vietnamese-language manuscript submitted to **HNUE Journal of Science** (<https://hnuejs.edu.vn>).
+LaTeX source for the Vietnamese-language manuscript prepared for **HNUE Journal of Science** (<https://hnuejs.edu.vn>).
 
 ## Build
 
 ```bash
-make pdf            # latexmk -> main.pdf
+make pdf            # latexmk -xelatex -> main.pdf
 make watch          # live preview, auto-rebuild on save
 make clean          # remove aux files
-make count_pages    # verify <= 10 pages (HNUE limit)
+make count_pages    # page count
 make count_words    # rough sanity check
 make verify         # smoke test: page count + section presence + repo link
 ```
 
-Requires `latexmk`, `texlive-latex-extra`, `texlive-lang-vietnamese`, `texlive-fonts-recommended`.
-On Debian/Ubuntu:
-
-```bash
-sudo apt-get install texlive-latex-extra texlive-lang-vietnamese texlive-fonts-recommended latexmk
-```
+Requires XeLaTeX + `latexmk` (TeX Live or TinyTeX) with `fontspec`, `polyglossia`, `mathptmx`,
+`rsfs`, and the **Times New Roman** font installed on the system (Debian/Ubuntu:
+`ttf-mscorefonts-installer`). TinyTeX: `tlmgr install rsfs`.
 
 ## Format compliance
 
-This manuscript follows the HNUE Journal of Science format spec encoded in the
-[`hnue-journal-format`](~/.claude/skills/hnue-journal-format/SKILL.md) skill.
-Headline constraints enforced by `main.tex`/`style/hnue.sty`:
+This manuscript follows the journal's Vietnamese-article template
+(`Mau bao cao Tieng Viet.docx`). Constraints enforced by `main.tex` / `style/hnue.sty`:
 
-- Paper 19 × 27 cm, margins 3 / 2.5 / 2 / 1 cm.
-- Times New Roman 12 pt body, single line spacing, 0.75 cm indent, 2 pt before/after.
-- Section headings 14 pt bold, subsections 13 pt / 12 pt.
-- Numeric `[n]` citations via `\bibliographystyle{ieeetr}`.
-- Bilingual VI/EN metadata + abstract in 2 columns.
-- Tables: caption above (bold italic, centered). Figures: caption below.
+- Paper 19 × 27 cm; margins top 2.5 / bottom 2 / inside 3 / outside 1 cm (mirrored);
+  header/footer 1.5 cm; page number left on even, right on odd pages.
+- Times New Roman 11 pt body, single line spacing, 0.75 cm first-line indent, 2 pt before/after.
+- Headings: section 14 pt, subsection 12 pt, sub-subsection 11 pt, bold.
+- Title UPPERCASE bold 11 pt; author 12 pt; affiliation italic 11 pt;
+  Tóm tắt / Từ khóa 10 pt. Received/revised/accepted dates and corresponding author
+  as an unmarked footnote on page 1.
+- References: numbered by order of appearance, formatted by `style/hnue.bst`
+  ("Tác giả, năm. Tên bài. *Tạp chí*. Vol. xx, Số. xx, tr. xx–xy."); at least one
+  HNUE Journal of Science article cited.
+- English ABSTRACT (title, author, affiliation, abstract, keywords) at the end, after references.
+- Tables: caption above; figures: caption below; both bold italic ("Bảng 1.", "Hình 1.").
 
 ## Figure source mapping
 

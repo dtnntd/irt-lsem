@@ -58,7 +58,7 @@ and `src/r/b5_report.Rmd` (report rendering).
 ## Contact
 
 - **Corresponding author:** Nguyen Tien Dat — `mas835151465@hnue.edu.vn` (primary),
-  `datlcpro@gmail.com` (alternative)
+  `dat.dtnntd@gmail.com` (alternative)
 - **Principal supervisor:** Assoc. Prof. Pham Tho Hoan
 - **Affiliation:** Faculty of Information Technology, School of Mathematics and Information
   Technology, Hanoi National University of Education, Hanoi, Vietnam
