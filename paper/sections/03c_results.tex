@@ -30,7 +30,7 @@
 \end{tabular}
 \par\vspace{4pt}
 % --- Hình 3 (Scree) ---
-\includegraphics[width=\linewidth]{scree_plots.png}
+\includegraphics[width=0.85\linewidth]{scree_plots.png}
 \captionof{figure}{Biểu đồ giá trị riêng (\emph{scree plot}) theo khối. ECV: tỷ trọng phương sai chung; $\lambda_1/\lambda_2$: tỷ số nhân tố 1 trên nhân tố 2 (càng lớn càng đơn chiều).}
 \label{fig:scree}
 \end{figure}
@@ -48,7 +48,7 @@ Diễn giải thực tiễn: ở khối~10, một học sinh có \(\theta_{t-1} 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\linewidth]{main_results.png}
+\includegraphics[width=0.8\linewidth]{main_results.png}
 \caption{Bốn kết quả chính: quỹ đạo LGCM, hệ số ghép cặp \(\beta\) LCSM, độ dốc đồng dấu từ ba phương pháp, và tốc độ học CT-DSEM ở khối 12 (khối 10/11/12 = xanh lá / cam / tím).}
 \label{fig:lgcmlcsm}
 \end{figure}
@@ -128,12 +128,12 @@ Bộ lọc Kalman cục bộ giúp giảm phương sai sai số đo lường EAP
 
 Trên quỹ đạo đã làm trơn, tổng tỷ lệ học sinh bị đánh dấu tăng dần từ khối 10 lên khối 12 (từ 14{,}4\% lên 22{,}3\%; Bảng~\ref{tab:warning}). Nhóm học sinh thoả mãn đồng thời cả hai tiêu chí (tốc độ tăng trưởng thấp và xuất hiện bước giảm đột ngột) duy trì ở mức 3{,}5--5{,}7\% qua ba khối --- đây là tập học sinh cần được giáo viên ưu tiên rà soát thủ công.
 
-Đối với bài toán gợi ý câu hỏi (B7b), 100\% các câu được khuyến nghị có \(|b - \hat\theta_{i,T}| < 0{,}5\) (150 hàng minh hoạ, ứng với 10 học sinh đại diện $\times$ 5 câu $\times$ 3 khối). Tỷ lệ này chủ yếu phản ánh \emph{mật độ cao của ngân hàng câu hỏi} ở vùng độ khó trung bình (Hình~\ref{fig:diff_dist}) chứ không phải đặc thù riêng của thuật toán; đóng góp của bài nằm ở chỗ gợi ý được căn cứ trên quỹ đạo đã làm trơn (phản ánh xu thế gần đây của học sinh) thay vì dựa trên một ước lượng \(\hat\theta\) tĩnh duy nhất.
+Đối với bài toán gợi ý câu hỏi (B7b), 100\% các câu được khuyến nghị có \(|b - \hat\theta_{i,T}| < 0{,}5\) (150 hàng minh hoạ, ứng với 10 học sinh đại diện $\times$ 5 câu $\times$ 3 khối). Tỷ lệ này chủ yếu phản ánh \emph{mật độ cao của ngân hàng câu hỏi} ở vùng độ khó trung bình chứ không phải đặc thù riêng của thuật toán; đóng góp của bài nằm ở chỗ gợi ý được căn cứ trên quỹ đạo đã làm trơn (phản ánh xu thế gần đây của học sinh) thay vì dựa trên một ước lượng \(\hat\theta\) tĩnh duy nhất.
 
-\begin{figure}[H]
+\begin{table}[htbp]
 \centering
 % --- Bảng 6 ---
-\captionof{table}{Số học sinh được cảnh báo sớm theo khối. Cột ``Cả hai'': học sinh thoả mãn đồng thời cả hai tiêu chí (tốc độ tăng trưởng thấp và bước giảm đột ngột).}
+\caption{Số học sinh được cảnh báo sớm theo khối. Cột ``Cả hai'': học sinh thoả mãn đồng thời cả hai tiêu chí (tốc độ tăng trưởng thấp và bước giảm đột ngột).}
 \label{tab:warning}
 \small
 \begin{tabular}{lrrr rrr}
@@ -145,9 +145,5 @@ Trên quỹ đạo đã làm trơn, tổng tỷ lệ học sinh bị đánh dấ
 12 & 10{.}440 & 2{.}325 & 22{,}3 & 557 & 1{.}281 & 487 \\
 \bottomrule
 \end{tabular}
-\par\vspace{4pt}
-% --- Hình 6 (Phân phối độ khó) — dùng layout 3-panel ngang ---
-\includegraphics[width=0.95\linewidth]{difficulty_dist_all_grades.png}
-\captionof{figure}{Phân phối độ khó $b_j$ theo khối (đường đứt nét đỏ: $b = 0$).}
-\label{fig:diff_dist}
-\end{figure}
+
+\end{table}
