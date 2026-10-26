@@ -19,7 +19,7 @@ Tham số độ khó \(b_j\) được ước lượng bằng phương pháp hợ
 
 \subsubsection{Tầng cấu trúc: bốn biến thể LSEM}
 
-\textit{Mô hình tăng trưởng tiềm ẩn (LGCM)} \cite{mcardle2009} mô hình hoá đồng thời điểm xuất phát và tốc độ tăng trưởng của cá nhân:
+\textit{Mô hình tăng trưởng tiềm ẩn (LGCM)} \cite{mcardle2009} mô hình hoá đồng thời điểm xuất phát và tốc độ tăng trưởng của cá nhân trên bốn đợt đầu của mỗi học sinh (\(t = 0,\dots,3\); FIML cho đợt thiếu), LCSM dùng cùng cửa sổ:
 \begin{equation}
 \hat{\theta}_{it} = \alpha_i + s_i\,t + \varepsilon_{it}, \quad (\alpha_i, s_i)^\top \sim \Norm\big((\alpha, s)^\top,\ \Sigma\big).
 \label{eq:lgcm}
@@ -29,12 +29,12 @@ Tham số độ khó \(b_j\) được ước lượng bằng phương pháp hợ
 \Delta \theta_{it} = \alpha + \beta\,\theta_{i,t-1} + \zeta_{it}.
 \label{eq:lcsm}
 \end{equation}
-\(\beta < 0\) thể hiện cơ chế đuổi kịp (học sinh yếu tăng nhanh hơn học sinh khá); \(\beta \approx 0\) biểu thị trạng thái ổn định. \textit{Mô hình tăng trưởng đa cấp (lmer)} sử dụng phương pháp REML thay vì FIML và đóng vai trò \emph{bằng chứng hội tụ}: nếu hai phương pháp cho ước lượng đồng dấu và xấp xỉ về độ lớn thì phát hiện được khẳng định là không phụ thuộc lựa chọn thuật toán. \textit{Mô hình CT-DSEM} (Ornstein--Uhlenbeck \cite{driver2017,asparouhov2018}) chỉ được áp dụng cho khối~12 vì hai lý do: (i) CT-DSEM đòi hỏi mỗi cá nhân có đủ nhiều đợt quan sát (chuẩn vàng \(T_i \ge 10\text{--}15\)) để ước lượng các tham số dynamics ở cấp cá nhân được tin cậy --- chỉ khối 12 có một tập con đủ lớn \(N = 460\) học sinh thoả \(T_i \ge 15\) (xem Bảng~\ref{tab:samples}: \(T_{\max} = 37\) ở khối 12 so với 17 và 22 ở khối 10, 11); (ii) khoảng cách thời gian \(\Delta t\) giữa các đợt đánh giá ở khối 12 trải năm bậc độ lớn (từ vài phút đến vài tháng), khiến mô hình thời gian rời rạc (DSEM) không còn phù hợp và bắt buộc phải dùng biến thể thời gian liên tục:
+\(\beta < 0\) thể hiện cơ chế đuổi kịp (học sinh yếu tăng nhanh hơn học sinh khá); \(\beta \approx 0\) biểu thị trạng thái ổn định. \textit{Mô hình tăng trưởng đa cấp (lmer)} dùng REML trên \emph{toàn bộ} chuỗi đợt của mỗi học sinh và được dùng để đối chiếu chiều của độ dốc. \textit{Mô hình CT-DSEM} (Ornstein--Uhlenbeck \cite{driver2017,asparouhov2018}) chỉ được áp dụng cho khối~12 vì hai lý do: (i) CT-DSEM đòi hỏi mỗi cá nhân có đủ nhiều đợt quan sát (chuẩn vàng \(T_i \ge 10\text{--}15\)) để ước lượng các tham số dynamics ở cấp cá nhân được tin cậy --- chỉ khối 12 có một tập con đủ lớn \(N = 460\) học sinh thoả \(T_i \ge 15\) (xem Bảng~\ref{tab:samples}: \(T_{\max} = 37\) ở khối 12 so với 17 và 22 ở khối 10, 11); (ii) khoảng cách thời gian \(\Delta t\) giữa các đợt đánh giá ở khối 12 trải năm bậc độ lớn (từ vài phút đến vài tháng), khiến mô hình thời gian rời rạc (DSEM) không còn phù hợp và bắt buộc phải dùng biến thể thời gian liên tục:
 \begin{equation}
-d\theta_{it} = (\mu - \varphi\,\theta_{it})\,dt + \sigma\,dW_t,
+d\theta_{it} = (\varphi\,\theta_{it} + \kappa)\,dt + \sigma\,dW_t,
 \label{eq:ctdsem}
 \end{equation}
-với điểm cân bằng dài hạn \(\theta_{\mathrm{eq}} = -\mu/\varphi\) và bán chu kỳ \(\ln 2 / |\varphi|\) đặc trưng cho tốc độ tiến về cân bằng. Mô hình RI-CLPM \cite{hamaker2015} không được sử dụng do dữ liệu hiện tại chỉ có một biến tiềm ẩn (năng lực Toán \(\theta\)); trong trường hợp đơn biến, RI-CLPM trở nên thừa tham số và quy về một mô hình AR(1) ngẫu nhiên, không cung cấp thêm thông tin so với CT-DSEM. Khoảng tin cậy 95\% cho các hệ số LGCM/LCSM được tính bằng \emph{bias-corrected bootstrap} với 1{.}000 mẫu (lavaan); khoảng tin cậy cho hệ số đa cấp tính theo Wald từ ma trận thông tin Fisher (lme4); khoảng tin cậy cho CT-DSEM tính theo Hessian xấp xỉ tại điểm MAP (ctsem).
+trong đó \(\varphi < 0\) biểu thị động lực quay về cân bằng, \(\kappa\) là hằng số trôi; điểm cân bằng dài hạn \(\theta_{\mathrm{eq}} = -\kappa/\varphi\) và bán chu kỳ \(\ln 2 / |\varphi|\) đặc trưng cho tốc độ tiến về cân bằng. Mô hình RI-CLPM \cite{hamaker2015} không được sử dụng do dữ liệu hiện tại chỉ có một biến tiềm ẩn (năng lực Toán \(\theta\)); trong trường hợp đơn biến, RI-CLPM trở nên thừa tham số và quy về một mô hình AR(1) ngẫu nhiên, không cung cấp thêm thông tin so với CT-DSEM. Khoảng tin cậy 95\% cho các hệ số LGCM/LCSM được tính bằng \emph{bias-corrected bootstrap} với 1{.}000 mẫu (lavaan); khoảng tin cậy cho hệ số đa cấp tính theo Wald từ ma trận thông tin Fisher (lme4); khoảng tin cậy cho CT-DSEM tính theo Hessian xấp xỉ tại điểm MAP (ctsem).
 
 \subsubsection{Bộ lọc Kalman cục bộ với phương sai quan sát biến thiên}
 

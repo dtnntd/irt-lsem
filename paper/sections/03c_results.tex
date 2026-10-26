@@ -85,7 +85,7 @@ Trên tập con khối~12 có \(T_i \ge 15\) (\(N = 460\) học sinh), các tham
 \textbf{Tham số} & \textbf{Ước lượng} & \textbf{CI 95\%} \\
 \midrule
 $\varphi$ (hệ số trôi)              & $-0{,}0017$ & $[-0{,}0027, -0{,}0010]$ \\
-$\mu \varphi$ (hằng số tích phân)   & $+0{,}0011$ & $[+0{,}0006, +0{,}0016]$ \\
+$\kappa$ (hằng số trôi)            & $+0{,}0011$ & $[+0{,}0006, +0{,}0016]$ \\
 $\sigma$ (khuếch tán)               & $0{,}046$   & $[0{,}041, 0{,}053]$ \\
 phương sai quan sát $\sigma_\varepsilon^2$ & $0{,}572$ & $[0{,}562, 0{,}582]$ \\
 $\theta_{\mathrm{eq}}$              & $+0{,}65$   & --- \\
@@ -102,12 +102,12 @@ Bộ lọc Kalman cục bộ giúp giảm phương sai sai số đo lường EAP
 \centering
 \begin{minipage}[c]{0.50\linewidth}
   \centering\footnotesize
-  \captionof{table}{Hiệu quả của bộ lọc Kalman: $\overline{\seit}$ giảm và $\hat q_g$ theo khối.}
+  \captionof{table}{Hiệu quả của bộ lọc Kalman theo khối. Giảm \% $= 1 - \overline{\seit^2}_{\text{làm trơn}}/\overline{\seit^2}_{\text{thô}}$.}
   \label{tab:ks}
   \resizebox{\linewidth}{!}{%
   \begin{tabular}{lrrrr}
   \toprule
-  \textbf{Khối} & \textbf{$\overline{\seit}$ thô} & \textbf{$\overline{\seit}$ làm trơn} & \textbf{Giảm \%} & \textbf{$\hat q_g$} \\
+  \textbf{Khối} & \textbf{$\overline{\seit}$ thô} & \textbf{$\overline{\seit}$ làm trơn} & \textbf{Giảm \% \(\overline{\seit^2}\)} & \textbf{$\hat q_g$} \\
   \midrule
   10 & 0{,}499 & 0{,}387 & 41{,}2 & 0{,}444 \\
   11 & 0{,}527 & 0{,}433 & 34{,}3 & 0{,}734 \\
