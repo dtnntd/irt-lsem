@@ -36,7 +36,7 @@ bash run_pipeline.sh
 
 Re-running the full pipeline from scratch requires the raw `response_long_*.csv` from OLM
 Math collections. Raw data is not published for student-privacy reasons; researchers who need
-access for replication purposes may contact the authors.
+access for replication purposes may contact the author.
 
 The aggregate CSVs in `outputs/b5_report/` are sufficient to regenerate **every table and
 figure in the manuscript**. Two scripts handle this: `src/r/b5_consolidate.R` (aggregation)
@@ -46,13 +46,12 @@ and `src/r/b5_report.Rmd` (report rendering).
 
 ```bibtex
 @article{nguyen2026irtlsem,
-  title  = {Real-time estimation of student ability based on Item Response Theory (IRT)
+  title  = {Dynamic estimation of student ability based on Item Response Theory (IRT)
             and Longitudinal Structural Equation Modeling (LSEM)},
-  author = {Nguyen, Tien Dat and Nguyen, Diep Linh and Bach, Duc Anh and
-            Bui, Thi Thu Thuy and Pham, Le Nhat Linh},
+  author = {Nguyen, Tien Dat},
   journal= {HNUE Journal of Science},
   year   = {2026},
-  note   = {Submitted}
+  note   = {Manuscript in preparation}
 }
 ```
 
